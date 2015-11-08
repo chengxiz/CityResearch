@@ -58,20 +58,41 @@ class WanfangSpider(Spider):
             #extract the pre word (e.g."doi:"), remove ':' then add it into Pre words List
             # print 'div['+str(i+1)+']'+'/span[@class="pre"]/text()'
             tmp=(baseinfofd.xpath('div['+str(i)+']'+'/span[@class="pre"]/text()').extract())[0][:-1].encode('utf-8')
-            print tmp
             PreList.append(tmp)
             n=listnumdict[tmp]
             with_a=[0,4,5,6]
-            without_a=[3,7,10,11,12]
+            without_a=[7,10,11,12]
+            r_inst=[3]
             r_author=[1,2]
             r_kw=[8,9]
             if n in with_a:
-                print n
                 item[itemdict[n]]=baseinfofd.xpath('div['+str(i)+']/span[@class="text"]/a/text()').extract()[0].encode('utf-8')
             elif n in without_a:
-                print n
                 item[itemdict[n]]=baseinfofd.xpath('div['+str(i)+']/span[@class="text"]/text()').extract()[0].encode('utf-8')
-            
+            elif n in r_inst:
+
+                Inlist=baseinfofd.xpath('div['+str(i)+']/span[@class="text"]')
+                # Remove '\r\n' and leading and ending space 
+                def remove(strinst):
+                    tmp=strinst.replace("\r\n","")
+                    re=tmp.strip()
+                    return re
+                
+                nspan=len(Inlist.xpath('span'))
+                print 'this is NNNNNNNNNNNNSPAN'
+                print nspan
+                # In case of unique institution 
+                if nspan==0:
+                    # Data type should be list for consistency
+                    tmp=Inlist.xpath('text()').extract()[0]                    
+                    item[itemdict[n]]=[remove(tmp).encode('utf-8')]
+                # In case of multiple institutions  
+                else:
+                    Instlist=[]
+                    for j in range(1,nspan+1):
+                        tmp=Inlist.xpath('span['+str(j)+']/text()').extract()[0].encode('utf-8')
+                        Instlist.append(tmp)
+                    item[itemdict[n]]=Instlist
             elif n in r_author:
                 row_author=baseinfofd.xpath('div['+str(i)+']/span[@class="text"]')
                 namelist=[]
@@ -85,18 +106,15 @@ class WanfangSpider(Spider):
 
 # they use two reverse ways to organize (ENgish/CHinese)
 
-                #In authors_Chinese case
+                #In case of authors_Chinese
                 if n==1:# with links to authors' homepages
                     hmplist=[]
-                    for i in range(1,len(row_author.xpath('a'))+1):
-                        print 'the length is'
-                        print len(row_author.xpath('a'))
-                        print i
+                    for i in range(1,len(row_author.xpath('a'))+1):                        
                         namelist.append(row_author.xpath('a['+str(i)+']/text()').extract()[0].encode('utf-8'))
                         hmplist.append(row_author.xpath('a['+str(i)+']/@href').extract()[0].encode('utf-8'))
                     namelist=[namelist,hmplist]
 
-                #In authors_English case
+                #In case of authors_English
                 else:
                     for i in range(1,len(row_author.xpath('span'))+1):
                         namelist.append(row_author.xpath('span['+str(i)+']/text()').extract()[0].encode('utf-8'))
@@ -104,7 +122,7 @@ class WanfangSpider(Spider):
                 item[itemdict[n]]=namelist            
             elif n in r_kw:
                 row_keyword=baseinfofd.xpath('div['+str(i)+']/span[@class="text"]')
-                # In keywords_Chinese case
+                # In case of keywords_Chinese
                 if n==8:
                     kwlist=[]
                     hmplist=[]
@@ -116,21 +134,15 @@ class WanfangSpider(Spider):
                         else:                                          
                             trendlist.append(row_keyword.xpath('a['+str(i)+']/@href').extract()[0].encode('utf-8'))
                     kw=[[kwlist,hmplist],trendlist]
-                # In keywords_English case                
+                # In case of keywords_English       
                 else:
                     kwlist=[]
                     hmplist=[]
-                    print row_keyword.extract()
-                    print 'len is' 
-                    print len(row_keyword.xpath('a'))
                     for i in range(1,len(row_keyword.xpath('a'))+1):                        
                         kwlist.append(row_keyword.xpath('a['+str(i)+']/text()').extract()[0].encode('utf-8'))
-                        print row_keyword.xpath('a['+str(i)+']/text()').extract()[0].encode('utf-8')
-                        print i
                         hmplist.append(row_keyword.xpath('a['+str(i)+']/@href').extract()[0].encode('utf-8'))
 
                         
-                    print 'English Keywords are'
                     
                     kw=[kwlist,hmplist]
                 item[itemdict[n]]=kw                
