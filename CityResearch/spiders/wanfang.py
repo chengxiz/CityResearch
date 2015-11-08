@@ -32,6 +32,7 @@ class WanfangSpider(Spider):
         tmp=baseinfo.xpath('h1/text()').extract()[0].encode('utf-8')
         item['name_Chinese']=re.split("\r\n",tmp)[0]
         item['name_English']=baseinfo.xpath('h2/text()').extract()
+        # Maybe abstract informations are useless
         # item['abstract_Chinese'] = baseinfo.xpath('//div[@class="text"]/text()').extract()
         # item['abstract_English'] = baseinfo.xpath('//div[@class="text"]/text()').extract()
 
@@ -47,12 +48,7 @@ class WanfangSpider(Spider):
         5:'journal_English',6:'volume',7:'classify_code',8:'keywords_Chinese',9:'keywords_English',10:'machineclassify_code',
         11:'date',12:'fundings'
         }
-
-        # print baseinfofd.xpath('div[@class="row row-author"]/span[@class="text"]').extract()
-        # print 'what'
-        # print baseinfofd.xpath('div[1]').extract()
-        # print 'the HELL'
-        # print 'the number of properties is '+str(len(baseinfofd.xpath('div')))
+     
         PreList=[]
         for i in range(1,len(baseinfofd.xpath('div'))+1):
             #extract the pre word (e.g."doi:"), remove ':' then add it into Pre words List
@@ -97,15 +93,6 @@ class WanfangSpider(Spider):
                 row_author=baseinfofd.xpath('div['+str(i)+']/span[@class="text"]')
                 namelist=[]
 
-
-# woCAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-# this way is designed for 
-# [1] "X-Ray Fluorescence Spectrum Studies on Bioorganic Carbon in Cereals and Carbon Chemical Circulation"
-# not for 
-# Study on the Creation of the Regional Carbon Cycle Pressure Index Model and Its Regulation Mechanism"
-
-# they use two reverse ways to organize (ENgish/CHinese)
-
                 #In case of authors_Chinese
                 if n==1:# with links to authors' homepages
                     hmplist=[]
@@ -148,20 +135,5 @@ class WanfangSpider(Spider):
                 item[itemdict[n]]=kw                
             else:
                 print 'there is some exception for item mapping'            
-        # print PreList
-        # print str(listnumdict[PreList[0]])+'that is '
-        
-        # 1 ## item['doi'] = baseinfofd.xpath('div[1]/span[@class="text"]/a/text()').extract()
-        # 2 ## item['authors_Chinese'] = baseinfofd.xpath('div[2]/span[@class="text"]/a/text()').extract()
-        # 3 ## item['authors_English'] = baseinfofd.xpath('div[3]/span[@class="text"]/a/text()').extract()
 
-        # 4 ## item['institutions'] = baseinfofd.xpath('div[4]/span[@class="text"]/text()').extract()
-        # 5 ## item['journal_Chinese'] = baseinfofd.xpath('div[5]/span[@class="text"]/a/text()').extract()
-        # 6 ## item['journal_English'] = baseinfofd.xpath('div[6]/span[@class="text"]/a/text()').extract()
-        # 7 ## item['volume'] = baseinfofd.xpath('div[7]/span[@class="text"]/a/text()').extract()
-        # 8 ## item['classify_code'] = baseinfofd.xpath('div[8]/span[@class="text"]/text()').extract()
-        # 9 ## item['keywords'] = baseinfofd.xpath('div[9]/span[@class="text"]/a/text()').extract()
-        # 10 ## item['machineclassify_code'] = baseinfofd.xpath('div[10]/span[@class="text"]/text()').extract()
-        # 11 ## item['date']= baseinfofd.xpath('div[11]/span[@class="text"]/text()').extract()
-        # 12 ## item['fundings'] = baseinfofd.xpath('div[12]/span[@class="text"]/text()').extract()
         return item
