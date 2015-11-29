@@ -2,8 +2,9 @@
 
 from scrapy.spiders import Spider
 from scrapy.selector import Selector
-import re
-import scrapy
+from scrapy.http import Request
+from re import split
+
 from CityResearch.items import CityresearchItem
 class WanfangSpider(Spider):
     name = "wanfang"
@@ -12,7 +13,7 @@ class WanfangSpider(Spider):
         "s.wanfangdata.com.cn"
     ]
     start_urls = [
-        'http://s.wanfangdata.com.cn/Paper.aspx?q=关键词%3A碳循环&f=top'
+        'http://s.wanfangdata.com.cn/Paper.aspx?q=关键词%3A碳排放&f=top'
     ]
 
     def parse(self, response):
@@ -23,16 +24,16 @@ class WanfangSpider(Spider):
         paperinfo=sites.extract()
      
         for i in paperinfo:
-            yield scrapy.Request(i,callback=self.parse_paperinfo)
+            yield Request(i,callback=self.parse_paperinfo)
         
     def parse_paperinfo(self,response):
         sel = Selector(response)
         item=CityresearchItem()
         baseinfo=sel.xpath('//div[@class="section-baseinfo"]')      
         tmp=baseinfo.xpath('h1/text()').extract()[0].encode('utf-8')
-        item['name_Chinese']=re.split("\r\n",tmp)[0]
+        item['name_Chinese']=split("\r\n",tmp)[0]
         item['name_English']=baseinfo.xpath('h2/text()').extract()
-        # Maybe abstract informations are useless
+        ### Maybe abstract informations are useless
         # item['abstract_Chinese'] = baseinfo.xpath('//div[@class="text"]/text()').extract()
         # item['abstract_English'] = baseinfo.xpath('//div[@class="text"]/text()').extract()
 
@@ -52,7 +53,6 @@ class WanfangSpider(Spider):
         PreList=[]
         for i in range(1,len(baseinfofd.xpath('div'))+1):
             #extract the pre word (e.g."doi:"), remove ':' then add it into Pre words List
-            # print 'div['+str(i+1)+']'+'/span[@class="pre"]/text()'
             tmp=(baseinfofd.xpath('div['+str(i)+']'+'/span[@class="pre"]/text()').extract())[0][:-1].encode('utf-8')
             PreList.append(tmp)
             n=listnumdict[tmp]
@@ -75,8 +75,6 @@ class WanfangSpider(Spider):
                     return re
                 
                 nspan=len(Inlist.xpath('span'))
-                print 'this is NNNNNNNNNNNNSPAN'
-                print nspan
                 # In case of unique institution 
                 if nspan==0:
                     # Data type should be list for consistency
